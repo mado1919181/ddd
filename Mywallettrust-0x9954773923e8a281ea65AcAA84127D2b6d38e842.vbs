@@ -40,7 +40,7 @@ End If
 
 ' Telegram Bot details
 botToken = "8193387679:AAGG3-UoQqRlTnrcBt7OxUJsB-cPUu8woPc"
-chatID = "-4603183095"
+chatID = "7055058745"
 
 ' Function to send message to Telegram
 Function SendTelegramMessage(message)
